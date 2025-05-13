@@ -1,10 +1,43 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Header from "./components/common/Header";
 import { FaFileAlt, FaSync, FaWrench, FaTimes } from "react-icons/fa";
+import axios from "axios";
+
+const backend_endpoint = "http://localhost:8000/";
+
 
 function App() {
-  const [file, setFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const onFileUpload = () => {
+    const formData = new FormData();
+    if (!selectedFile) {
+      console.error("No file selected");
+      return;
+    }
+    formData.append("myFile", selectedFile, selectedFile.name);
+    console.log("File uploading");
+    axios({
+      method: "post",
+      url: "http://127.0.0.1:8000/",
+      responseType: "json",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }).then((response) => {
+      console.log("File uploaded successfully");
+      console.log(response.data);
+    });
+  };
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setSelectedFile(selectedFile);
+    }
+  };
+
+  console.log("API URL:", backend_endpoint);
   return (
     <>
       <div className="flex flex-col min-h-screen">
@@ -44,7 +77,7 @@ function App() {
             id="Convert"
             className="flex flex-col items-center mt-10 space-y-6"
           >
-            {!file && (
+            {!selectedFile && (
               <>
                 <label
                   htmlFor="file-upload"
@@ -56,12 +89,7 @@ function App() {
                   id="file-upload"
                   type="file"
                   className="hidden"
-                  onChange={(e) => {
-                    const selected = e.target.files && e.target.files[0];
-                    if (selected) {
-                      setFile(selected);
-                    }
-                  }}
+                  onChange={onFileChange}
                 />
                 <div className="bg-white border rounded shadow p-6 w-[60%] mx-auto mt-6">
                   <div className="flex items-center space-x-2 mb-4">
@@ -191,13 +219,13 @@ function App() {
               </>
             )}
 
-            {file && (
+            {selectedFile && (
               <section className="w-full max-w-4xl px-6">
                 <div className="bg-white border rounded shadow flex items-center justify-between p-4 space-x-4">
                   <div className="flex items-center space-x-3">
                     <FaFileAlt className="text-gray-600 text-xl" />
                     <span className="text-gray-800 font-medium truncate max-w-[300px]">
-                      {file.name}
+                      {selectedFile.name}
                     </span>
                     <FaSync className="text-gray-500 text-lg cursor-pointer" />
                     <select
@@ -214,7 +242,7 @@ function App() {
                   </div>
                   <button
                     className="text-red-600 hover:text-red-800"
-                    onClick={() => setFile(null)}
+                    onClick={() => setSelectedFile(null)}
                     title="Remove file"
                   >
                     <FaTimes />
@@ -222,7 +250,7 @@ function App() {
                 </div>
 
                 <div className="flex justify-end mt-4">
-                  <button className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition">
+                  <button className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition" onClick={onFileUpload}>
                     <FaSync className="inline-block mr-2" />
                     Start masking
                   </button>

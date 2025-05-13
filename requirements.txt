@@ -1,0 +1,10 @@
+python-docx
+pymupdf
+easyocr
+langdetect
+rapidfuzz
+deep-translator
+spacy
+presidio-analyzer
+
+fastapi[standard]
