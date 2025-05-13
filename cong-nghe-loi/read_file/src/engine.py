@@ -112,11 +112,11 @@ def file_to_json(file_path):
 #     endTime = time.time()
 #     print("Tortal processing time:", endTime - startTime)
 
-result1, result2, flag = file_to_json("NguyenPhuc_DevOpsEngineer_NAB.pdf")
+# result1, result2, flag = file_to_json("NguyenPhuc_DevOpsEngineer_NAB.pdf")
 
-if flag:
-    print("Processing completed successfully.")
-    print("Extracted entities:", result1)
-    print("Private images info:", result2)
-else:
-    print("Processing failed. Please check the input file or OCR data.")
+# if flag:
+#     print("Processing completed successfully.")
+#     print("Extracted entities:", result1)
+#     print("Private images info:", result2)
+# else:
+#     print("Processing failed. Please check the input file or OCR data.")
