@@ -5,7 +5,6 @@ import axios from "axios";
 
 const backend_endpoint = "http://localhost:8000/";
 
-
 function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -19,14 +18,15 @@ function App() {
     console.log("File uploading");
     axios({
       method: "post",
-      url: "http://127.0.0.1:8000/",
+      url: "http://localhost:8000/",
       responseType: "json",
       data: formData,
       headers: {
-        "Content-Type": "multipart/form-data"
-      }
+        "Content-Type": "multipart/form-data",
+      },
     }).then((response) => {
       console.log("File uploaded successfully");
+      console.log(response);
       console.log(response.data);
     });
   };
@@ -250,7 +250,10 @@ function App() {
                 </div>
 
                 <div className="flex justify-end mt-4">
-                  <button className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition" onClick={onFileUpload}>
+                  <button
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
+                    onClick={onFileUpload}
+                  >
                     <FaSync className="inline-block mr-2" />
                     Start masking
                   </button>

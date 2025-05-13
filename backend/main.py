@@ -13,8 +13,7 @@ from engine import file_to_json
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
+    "*"
 ]
 
 
@@ -42,7 +41,7 @@ async def process_file(myFile: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(myFile.file, buffer)
         
-    delete_file_in_background(file_path, delay=10)
+    delete_file_in_background(file_path, delay=7200)
     ## process file
     res1, res2, flag = file_to_json(file_path)
     
