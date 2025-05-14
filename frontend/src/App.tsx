@@ -2,13 +2,27 @@ import { useState } from "react";
 import Header from "./components/common/Header";
 import { FaFileAlt, FaSync, FaWrench, FaTimes } from "react-icons/fa";
 import axios from "axios";
+import Footer from "./components/common/Footer";
 
 const backend_endpoint = "http://localhost:8000/";
 
+const labelMapping = {
+  PERSON: "Personal Name",
+  ORGANIZATION: "Organization",
+  LOCATION: "Geographic Location",
+  PHONE_NUMBER: "Phone Number",
+  ADDRESS: "Home Address",
+  EMAIL_ADDRESS: "Email Address",
+  CREDIT_CARD: "Bank Card",
+  URL: "Website URL",
+};
+
 function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [maskingMode, setMaskingMode] = useState("auto");
+  const [selectedLabels, setSelectedLabels] = useState([]);
 
-  const onFileUpload = () => {
+  const onFileAnalyze = () => {
     const formData = new FormData();
     if (!selectedFile) {
       console.error("No file selected");
@@ -18,7 +32,7 @@ function App() {
     console.log("File uploading");
     axios({
       method: "post",
-      url: "http://localhost:8000/",
+      url: backend_endpoint,
       responseType: "json",
       data: formData,
       headers: {
@@ -30,14 +44,20 @@ function App() {
       console.log(response.data);
     });
   };
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setSelectedFile(selectedFile);
     }
   };
+  const handleToggle = (key: string[]) => {
+    setSelectedLabels((prev) =>
+      prev.includes(key)
+        ? prev.filter((label) => label !== key)
+        : [...prev, key]
+    );
+  };
 
-  console.log("API URL:", backend_endpoint);
   return (
     <>
       <div className="flex flex-col min-h-screen">
@@ -89,58 +109,8 @@ function App() {
                   id="file-upload"
                   type="file"
                   className="hidden"
-                  onChange={onFileChange}
+                  onChange={onFileUpload}
                 />
-                <div className="bg-white border rounded shadow p-6 w-[60%] mx-auto mt-6">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <span className="text-xl font-semibold">
-                      <span className="inline-block mr-2">🔧</span>OPTIONS
-                    </span>
-                  </div>
-
-                  <div className="border-t pt-6 space-y-6">
-                    {/* PII Masking Options */}
-                    <div>
-                      <label className="block text-lg font-medium mb-2">
-                        PII Masking
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <label className="flex items-center space-x-2">
-                          <input type="checkbox" className="form-checkbox" />
-                          <span>National ID</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input type="checkbox" className="form-checkbox" />
-                          <span>Bank Card</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input type="checkbox" className="form-checkbox" />
-                          <span>Phone Number</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input type="checkbox" className="form-checkbox" />
-                          <span>Home Address</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input type="checkbox" className="form-checkbox" />
-                          <span>Facial Image</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input type="checkbox" className="form-checkbox" />
-                          <span>Personal Name</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input type="checkbox" className="form-checkbox" />
-                          <span>Geographic Location</span>
-                        </label>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-2">
-                        Select the sensitive information you want to
-                        automatically redact or mask.
-                      </p>
-                    </div>
-                  </div>
-                </div>
 
                 <div
                   id="HowItWorks"
@@ -231,6 +201,8 @@ function App() {
                     <select
                       title="Select PII masking mode"
                       className="border rounded px-3 py-1"
+                      value={maskingMode}
+                      onChange={(e) => setMaskingMode(e.target.value)}
                     >
                       <option value="auto">Automatic Masking</option>
                       <option value="manual">Let Me Choose What to Mask</option>
@@ -252,99 +224,66 @@ function App() {
                 <div className="flex justify-end mt-4">
                   <button
                     className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
-                    onClick={onFileUpload}
+                    onClick={onFileAnalyze}
                   >
                     <FaSync className="inline-block mr-2" />
-                    Start masking
+                    Start analyzing
                   </button>
                 </div>
+                {maskingMode === "auto" && (
+                  <div className="bg-white border rounded shadow p-6 w-full mx-auto mt-6">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <span className="text-xl font-semibold">
+                        <span className="inline-block mr-2">🔧</span>OPTIONS
+                      </span>
+                    </div>
+
+                    <div className="border-t pt-6 space-y-6">
+                      {/* PII Masking Options */}
+                      <div>
+                        <label className="block text-lg font-medium mb-2">
+                          PII Masking
+                        </label>
+                        <div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            {Object.entries(labelMapping).map(
+                              ([key, display]) => (
+                                <label
+                                  key={key}
+                                  className="flex items-center space-x-2"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="form-checkbox"
+                                    checked={selectedLabels.includes(key)}
+                                    onChange={() => handleToggle(key)}
+                                  />
+                                  <span>{display}</span>
+                                </label>
+                              )
+                            )}
+                          </div>
+
+                          {/* 👇 Xem thử kết quả hoặc gửi đi khi cần */}
+                          <pre className="mt-4 text-sm text-gray-600">
+                            Selected labels:{" "}
+                            {JSON.stringify(selectedLabels, null, 2)}
+                          </pre>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-2">
+                          Select the sensitive information you want to
+                          automatically redact or mask.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </section>
             )}
           </div>
         </main>
 
-        <footer
-          id="Contact"
-          className="bg-gray-100 text-gray-800 px-8 py-12 mt-16 w-full"
-        >
-          <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
-            <div>
-              <h3 className="font-bold mb-2">Project</h3>
-              <p>PII Masking Tool</p>
-              <a
-                href="https://github.com/your-repo-link"
-                className="text-red-600 hover:underline"
-              >
-                View on GitHub
-              </a>
-            </div>
-            <div>
-              <h3 className="font-bold mb-2">Team Members</h3>
-              <ul className="space-y-1">
-                <li>
-                  <a
-                    href="https://github.com/member1"
-                    className="text-red-600 hover:underline"
-                  >
-                    Member One
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/member2"
-                    className="text-red-600 hover:underline"
-                  >
-                    Member Two
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/member3"
-                    className="text-red-600 hover:underline"
-                  >
-                    Member Three
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/member4"
-                    className="text-red-600 hover:underline"
-                  >
-                    Member Four
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/member5"
-                    className="text-red-600 hover:underline"
-                  >
-                    Member Five
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-2">Contact</h3>
-              <p>
-                Email:{" "}
-                <a
-                  href="mailto:yourgroup@example.com"
-                  className="text-red-600 hover:underline"
-                >
-                  yourgroup@example.com
-                </a>
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold mb-2">Institution</h3>
-              <p>University Placeholder</p>
-              <p>Course: Secure Programming</p>
-            </div>
-          </div>
-          <div className="text-center text-gray-500 text-sm mt-8">
-            © 2025 PII Masking Team. All rights reserved.
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   );
