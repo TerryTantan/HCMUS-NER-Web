@@ -4,53 +4,161 @@ import { FaFileAlt, FaSync, FaWrench, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import Footer from "./components/common/Footer";
 
-const backend_endpoint = "http://localhost:8000/";
+const backend_endpoint = "http://localhost:8100";
 
 const labelMapping = {
   PERSON: "Personal Name",
-  ORGANIZATION: "Organization",
-  LOCATION: "Geographic Location",
+  ORG: "Organization",
+  LOC: "Geographic Location",
   PHONE_NUMBER: "Phone Number",
   ADDRESS: "Home Address",
   EMAIL_ADDRESS: "Email Address",
   CREDIT_CARD: "Bank Card",
   URL: "Website URL",
 };
+interface AnalysisResult {
+  file_path?: string;
+  res1?: Array<Array<[string, string, number, number]>>;
+  res2?: Array<string>;
+  flag: boolean;
+}
+
+const emptyResult = {
+  file_path: undefined,
+  res1: undefined,
+  res2: undefined,
+  flag: false,
+};
 
 function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [maskingMode, setMaskingMode] = useState("auto");
-  const [selectedLabels, setSelectedLabels] = useState([]);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isMasking, setIsMasking] = useState(false);
+
+  const [analysisResult, setAnalysisResult] =
+    useState<AnalysisResult>(emptyResult);
+
+  const [selectedRows, setSelectedRows] = useState<Record<number, Set<number>>>(
+    {}
+  );
+
+  const toggleRowSelection = (pageIndex: number, rowIndex: number) => {
+    setSelectedRows((prev) => {
+      const currentSet = prev[pageIndex] || new Set();
+      const newSet = new Set(currentSet);
+      if (newSet.has(rowIndex)) {
+        newSet.delete(rowIndex);
+      } else {
+        newSet.add(rowIndex);
+      }
+      return { ...prev, [pageIndex]: newSet };
+    });
+  };
+
+  const toggleSelectAllInPage = (pageIndex: number, totalItems: number) => {
+    setSelectedRows((prev) => {
+      const currentSet = prev[pageIndex] || new Set();
+      const newSet = new Set(currentSet);
+
+      if (newSet.size === totalItems) {
+        // Bỏ chọn hết nếu đã chọn hết rồi
+        return { ...prev, [pageIndex]: new Set() };
+      } else {
+        // Chọn hết
+        const all = new Set<number>();
+        for (let i = 0; i < totalItems; i++) {
+          all.add(i);
+        }
+        return { ...prev, [pageIndex]: all };
+      }
+    });
+  };
+
+  const getFilteredRes1 = () => {
+    if (!analysisResult.res1) return [];
+
+    return analysisResult.res1.map((pageItems, pageIndex) => {
+      const selectedSet = selectedRows[pageIndex] || new Set();
+      return pageItems.filter((_, itemIndex) => selectedSet.has(itemIndex));
+    });
+  };
+
+  const getFilteredRes2 = () => {
+    return analysisResult.res2;
+  };
+
+  const onFileMasking = () => {
+    setIsMasking(true); // ← Bắt đầu phân tích
+
+    const filteredRes1 = getFilteredRes1();
+    const filteredRes2 = getFilteredRes2();
+
+    const payload = {
+      file_path: analysisResult.file_path,
+      res1: filteredRes1,
+      res2: filteredRes2,
+    };
+
+    console.log("Masking payload", payload);
+
+    axios
+      .post(backend_endpoint + "/pii/mask", payload)
+      .then((response) => {
+        console.log("Masking success", response.data);
+        // xử lý tiếp nếu cần
+      })
+      .catch((error) => {
+        console.error("Masking failed", error);
+      })
+      .finally(() => {
+        setIsMasking(false); // ← Kết thúc
+      });
+  };
 
   const onFileAnalyze = () => {
-    const formData = new FormData();
     if (!selectedFile) {
       console.error("No file selected");
       return;
     }
+
+    setIsAnalyzing(true); // ← Bắt đầu phân tích
+
+    const formData = new FormData();
     formData.append("myFile", selectedFile, selectedFile.name);
     console.log("File uploading");
+
     axios({
       method: "post",
-      url: backend_endpoint,
+      url: backend_endpoint + "/pii/analyze",
       responseType: "json",
       data: formData,
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }).then((response) => {
-      console.log("File uploaded successfully");
-      console.log(response);
-      console.log(response.data);
-    });
+    })
+      .then((response) => {
+        console.log("File uploaded successfully");
+        console.log(response.data);
+        setAnalysisResult(response.data); // ← Cập nhật kết quả
+      })
+      .catch((error) => {
+        console.error("Upload failed", error);
+      })
+      .finally(() => {
+        setIsAnalyzing(false); // ← Kết thúc
+      });
   };
+
   const onFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setSelectedFile(selectedFile);
     }
   };
-  const handleToggle = (key: string[]) => {
+
+  const handleToggle = (key: string) => {
     setSelectedLabels((prev) =>
       prev.includes(key)
         ? prev.filter((label) => label !== key)
@@ -214,7 +322,10 @@ function App() {
                   </div>
                   <button
                     className="text-red-600 hover:text-red-800"
-                    onClick={() => setSelectedFile(null)}
+                    onClick={() => {
+                      setSelectedFile(null);
+                      setAnalysisResult(emptyResult);
+                    }}
                     title="Remove file"
                   >
                     <FaTimes />
@@ -223,58 +334,191 @@ function App() {
 
                 <div className="flex justify-end mt-4">
                   <button
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"
-                    onClick={onFileAnalyze}
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={
+                      analysisResult.res1 ? onFileMasking : onFileAnalyze
+                    }
+                    disabled={analysisResult.res1 ? isMasking : isAnalyzing}
                   >
                     <FaSync className="inline-block mr-2" />
-                    Start analyzing
+                    {analysisResult.res1 ? "Start masking" : "Start analyzing"}
                   </button>
                 </div>
-                {maskingMode === "auto" && (
-                  <div className="bg-white border rounded shadow p-6 w-full mx-auto mt-6">
-                    <div className="flex items-center space-x-2 mb-4">
-                      <span className="text-xl font-semibold">
-                        <span className="inline-block mr-2">🔧</span>OPTIONS
-                      </span>
-                    </div>
 
-                    <div className="border-t pt-6 space-y-6">
-                      {/* PII Masking Options */}
-                      <div>
-                        <label className="block text-lg font-medium mb-2">
-                          PII Masking
-                        </label>
+                {maskingMode === "auto" &&
+                  !analysisResult.res1 &&
+                  !isAnalyzing && (
+                    <div className="bg-white border rounded shadow p-6 w-full mx-auto mt-6">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <span className="text-xl font-semibold">
+                          <span className="inline-block mr-2">🔧</span>OPTIONS
+                        </span>
+                      </div>
+
+                      <div className="border-t pt-6 space-y-6">
+                        {/* PII Masking Options */}
                         <div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                            {Object.entries(labelMapping).map(
-                              ([key, display]) => (
-                                <label
-                                  key={key}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <input
-                                    type="checkbox"
-                                    className="form-checkbox"
-                                    checked={selectedLabels.includes(key)}
-                                    onChange={() => handleToggle(key)}
-                                  />
-                                  <span>{display}</span>
-                                </label>
-                              )
+                          <label className="block text-lg font-medium mb-2">
+                            PII Masking
+                          </label>
+                          <div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                              {Object.entries(labelMapping).map(
+                                ([key, display]) => (
+                                  <label
+                                    key={key}
+                                    className="flex items-center space-x-2"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      className="form-checkbox"
+                                      checked={selectedLabels.includes(key)}
+                                      onChange={() => handleToggle(key)}
+                                    />
+                                    <span>{display}</span>
+                                  </label>
+                                )
+                              )}
+                            </div>
+
+                            {/* 👇 Xem thử kết quả hoặc gửi đi khi cần */}
+                            <pre className="mt-4 text-sm text-gray-600">
+                              Selected labels:{" "}
+                              {JSON.stringify(selectedLabels, null, 2)}
+                            </pre>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-2">
+                            Select the sensitive information you want to
+                            automatically redact or mask.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                {isAnalyzing && (
+                  <div className="flex justify-center items-center mt-6">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid"></div>
+                    <span className="ml-4 text-lg font-medium">
+                      Analyzing...
+                    </span>
+                  </div>
+                )}
+
+                {analysisResult?.res1 && (
+                  <div className="bg-white border rounded shadow p-6 w-full mx-auto mt-6">
+                    <h3 className="text-xl font-bold mb-4 text-gray-800">
+                      Analysis Result
+                    </h3>
+                    <div className="space-y-6">
+                      {analysisResult.res1.map(
+                        (
+                          pageItems: [string, string, number, number][],
+                          pageIndex: number
+                        ) => (
+                          <div key={pageIndex}>
+                            <h4 className="text-lg font-semibold mb-2 flex items-center gap-4">
+                              Page {pageIndex + 1}
+                              {maskingMode !== "auto" &&
+                                pageItems.length > 0 && (
+                                  <label className="inline-flex items-center text-sm font-normal">
+                                    <input
+                                      type="checkbox"
+                                      className="mr-2"
+                                      checked={
+                                        selectedRows[pageIndex]?.size ===
+                                          pageItems.length &&
+                                        pageItems.length > 0
+                                      }
+                                      onChange={() =>
+                                        toggleSelectAllInPage(
+                                          pageIndex,
+                                          pageItems.length
+                                        )
+                                      }
+                                    />
+                                    Select all
+                                  </label>
+                                )}
+                            </h4>
+                            {pageItems.length === 0 ? (
+                              <p className="text-gray-500 italic">
+                                No PII found on this page.
+                              </p>
+                            ) : (
+                              <table className="w-full table-auto border">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    {maskingMode !== "auto" && (
+                                      <th className="border px-3 py-2">
+                                        Select
+                                      </th>
+                                    )}
+                                    <th className="border px-3 py-2 text-left">
+                                      Text
+                                    </th>
+                                    <th className="border px-3 py-2 text-left">
+                                      Type
+                                    </th>
+                                    <th className="border px-3 py-2 text-left">
+                                      Start
+                                    </th>
+                                    <th className="border px-3 py-2 text-left">
+                                      End
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {pageItems.map(
+                                    (
+                                      item: [string, string, number, number],
+                                      idx: number
+                                    ) => (
+                                      <tr
+                                        key={idx}
+                                        className="hover:bg-gray-50"
+                                      >
+                                        {maskingMode !== "auto" && (
+                                          <td className="border px-3 py-2 text-center">
+                                            <input
+                                              type="checkbox"
+                                              title="Select this row"
+                                              checked={
+                                                selectedRows[pageIndex]?.has(
+                                                  idx
+                                                ) || false
+                                              }
+                                              onChange={() =>
+                                                toggleRowSelection(
+                                                  pageIndex,
+                                                  idx
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                        )}
+                                        <td className="border px-3 py-2">
+                                          {item[0]}
+                                        </td>
+                                        <td className="border px-3 py-2">
+                                          {labelMapping[
+                                            item[1] as keyof typeof labelMapping
+                                          ] || item[1]}
+                                        </td>
+                                        <td className="border px-3 py-2">
+                                          {item[2]}
+                                        </td>
+                                        <td className="border px-3 py-2">
+                                          {item[3]}
+                                        </td>
+                                      </tr>
+                                    )
+                                  )}
+                                </tbody>
+                              </table>
                             )}
                           </div>
-
-                          {/* 👇 Xem thử kết quả hoặc gửi đi khi cần */}
-                          <pre className="mt-4 text-sm text-gray-600">
-                            Selected labels:{" "}
-                            {JSON.stringify(selectedLabels, null, 2)}
-                          </pre>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-2">
-                          Select the sensitive information you want to
-                          automatically redact or mask.
-                        </p>
-                      </div>
+                        )
+                      )}
                     </div>
                   </div>
                 )}

@@ -32,7 +32,7 @@ def read_root():
 
 
 
-@app.post("/")
+@app.post("/pii/analyze")
 async def process_file(myFile: UploadFile = File(...)):
     salt = random.randint(1, 1000000)
     file_path = f"cached_file/{salt}{myFile.filename}"
