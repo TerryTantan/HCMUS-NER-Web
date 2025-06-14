@@ -70,3 +70,6 @@ htmlcov/
 package-lock.json
 .envrc
 .pytest_cache/
+
+# Python virtual environments
+pdf-masker/.venv
