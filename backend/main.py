@@ -8,6 +8,9 @@ import random
 import time
 import threading
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
+from typing import List
+
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'cong-nghe-loi', 'read_file', 'src')))
 # from engine import file_to_json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -18,6 +21,8 @@ app = FastAPI()
 origins = [
     "*"
 ]
+
+delay_time = 300
 
 
 
@@ -33,8 +38,9 @@ app.add_middleware(
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/pdf/upload")
+@app.post("/pdf/upload")
 async def upload_file(myFile: UploadFile = File(...)):
+    print("ass")
     salt = random.randint(1, 1000000)
     file_path = f"cached_file/{salt}{myFile.filename}"
     
@@ -42,64 +48,62 @@ async def upload_file(myFile: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(myFile.file, buffer)
         
-    delete_file_in_background(file_path, delay=7200)
+    delete_file_in_background(file_path, delay=delay_time)
     
     ## process file
     content = utils.get_content(file_path)
     pii_words = utils.get_pii_words(content)
+    print(f"PII words found: {pii_words}")
     images_info = utils.extract_images(file_path)
+    #dont send image key in inmage_info
+    images_info = [{"page": img["page"], "bbox": img["bbox"]} for img in images_info]
 
     return {
         "file_path": file_path,
-        "pii_words": pii_words,
-        "image_infos": images_info
+        "pii_words": pii_words,  # Placeholder for PII words, if needed
+        # "image_infos": images_info,  # Placeholder for image information
     }
+class BlackenWordsRequest(BaseModel):
+    file_path: str
+    words: List[str]
 
 @app.post("/pdf/blacken_words")
-async def blacken_words(file_path: str, words: list):
-    """
-    Blackens specified words in a PDF file.
-    Args:
-        file_path (str): Path to the input PDF file.
-        words (list): List of words to blacken.
-    Returns:
-        dict: Information about the blackened words and the output file path.
-    """
-    if not os.path.exists(file_path):
+async def blacken_words(req: BlackenWordsRequest):
+    if not os.path.exists(req.file_path):
         return {"error": "File not found"}
     
-    flag = utils.blacken_words(file_path, f"blackened_words_{os.path.basename(file_path)}", words)
+    flag = utils.blacken_words(req.file_path, f"blackened_words_{os.path.basename(req.file_path)}", req.words)
     if flag == 0:
         return {"error": "No words found to blacken"}
 
     return FileResponse(
-        f"blackened_words_{os.path.basename(file_path)}",
+        f"blackened_words_{os.path.basename(req.file_path)}",
         media_type='application/pdf',
-        filename=f"blackened_words_{os.path.basename(file_path)}",
+        filename=f"blackened_words_{os.path.basename(req.file_path)}",
     )
 
-@app.post("/pdf/blacken_images")
-async def blacken_images(file_path: str, images_info):
-    """
-    Blackens images in a PDF file.
-    Args:
-        file_path (str): Path to the input PDF file.
-    Returns:
-        dict: Information about the blackened images and the output file path.
-    """
-    if not os.path.exists(file_path):
-        return {"error": "File not found"}
+# @app.post("/pdf/blacken_images")
+# async def blacken_images(file_path: str, images_info):
+#     """
+#     Blackens images in a PDF file.
+#     Args:
+#         file_path (str): Path to the input PDF file.
+#     Returns:
+#         dict: Information about the blackened images and the output file path.
+#     """
+#     if not os.path.exists(file_path):
+#         return {"error": "File not found"}
     
-    flag = utils.blacken_images(file_path, f"blackened_images_{os.path.basename(file_path)}", images_info)
+#     flag = utils.blacken_images(file_path, f"blackened_images_{os.path.basename(file_path)}", images_info)
 
-    if flag == 0:
-        return {"error": "No images found to blacken"}
+#     if flag == 0:
+#         return {"error": "No images found to blacken"}
     
-    return FileResponse(
-        f"blackened_images_{os.path.basename(file_path)}",
-        media_type='application/pdf',
-        filename=f"blackened_images_{os.path.basename(file_path)}",
-    )
+#     return FileResponse(
+#         f"blackened_images_{os.path.basename(file_path)}",
+#         media_type='application/pdf',
+#         filename=f"blackened_images_{os.path.basename(file_path)}",
+#     )
 
 
 # @app.post("/pii/analyze")
