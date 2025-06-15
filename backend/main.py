@@ -63,16 +63,20 @@ async def upload_file(myFile: UploadFile = File(...)):
         "pii_words": pii_words,  # Placeholder for PII words, if needed
         # "image_infos": images_info,  # Placeholder for image information
     }
+
 class BlackenWordsRequest(BaseModel):
     file_path: str
-    words: List[str]
+    words: List[dict]
 
 @app.post("/pdf/blacken_words")
 async def blacken_words(req: BlackenWordsRequest):
     if not os.path.exists(req.file_path):
         return {"error": "File not found"}
     
-    flag = utils.blacken_words(req.file_path, f"blackened_words_{os.path.basename(req.file_path)}", req.words)
+    # Extract only the word field from each dictionary
+    words = [word['word'] for word in req.words]
+    
+    flag = utils.blacken_words(req.file_path, f"blackened_words_{os.path.basename(req.file_path)}", words)
     if flag == 0:
         return {"error": "No words found to blacken"}
 

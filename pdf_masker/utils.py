@@ -50,7 +50,7 @@ def blacken_words(fname: str, out_fname: str, words: list):
     Args:
         fname (str): Input PDF file name.
         out_fname (str): Output PDF file name.
-        words (list): List of words to blacken.
+        words (list): List of strings to blacken.
     """
     flag = 0
     with pymupdf.open(fname) as doc:  # open document
