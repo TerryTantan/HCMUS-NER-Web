@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/common/Header";
 import { FaFileAlt, FaSync, FaWrench, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import Footer from "./components/common/Footer";
 
-const backend_endpoint = "http://localhost:8100";
+const backend_endpoint = "http://localhost:8000";
 
 const labelMapping = {
   PERSON: "Personal Name",
@@ -18,15 +18,22 @@ const labelMapping = {
 };
 interface AnalysisResult {
   file_path?: string;
-  res1?: Array<Array<[string, string, number, number]>>;
-  res2?: Array<string>;
+  words?: Array<{
+    word: string;
+    type: string;
+    score: number;
+  }>;
+  images_info?: Array<{
+    // We'll add the proper type when we have the structure
+    [key: string]: unknown;
+  }>;
   flag: boolean;
 }
 
 const emptyResult = {
   file_path: undefined,
-  res1: undefined,
-  res2: undefined,
+  words: undefined,
+  images_info: undefined,
   flag: false,
 };
 
@@ -39,6 +46,14 @@ function App() {
 
   const [analysisResult, setAnalysisResult] =
     useState<AnalysisResult>(emptyResult);
+
+  useEffect(() => {
+    console.log("Analysis result changed:", {
+      hasRes1: !!analysisResult.words,
+      res1Length: analysisResult.words?.length,
+      res1Content: analysisResult.words,
+    });
+  }, [analysisResult]);
 
   const [selectedRows, setSelectedRows] = useState<Record<number, Set<number>>>(
     {}
@@ -57,36 +72,17 @@ function App() {
     });
   };
 
-  const toggleSelectAllInPage = (pageIndex: number, totalItems: number) => {
-    setSelectedRows((prev) => {
-      const currentSet = prev[pageIndex] || new Set();
-      const newSet = new Set(currentSet);
-
-      if (newSet.size === totalItems) {
-        // Bỏ chọn hết nếu đã chọn hết rồi
-        return { ...prev, [pageIndex]: new Set() };
-      } else {
-        // Chọn hết
-        const all = new Set<number>();
-        for (let i = 0; i < totalItems; i++) {
-          all.add(i);
-        }
-        return { ...prev, [pageIndex]: all };
-      }
-    });
-  };
-
   const getFilteredRes1 = () => {
-    if (!analysisResult.res1) return [];
+    if (!analysisResult.words) return [];
 
-    return analysisResult.res1.map((pageItems, pageIndex) => {
-      const selectedSet = selectedRows[pageIndex] || new Set();
-      return pageItems.filter((_, itemIndex) => selectedSet.has(itemIndex));
-    });
+    const selectedSet = selectedRows[0] || new Set();
+    return analysisResult.words.filter((_, itemIndex) =>
+      selectedSet.has(itemIndex)
+    );
   };
 
   const getFilteredRes2 = () => {
-    return analysisResult.res2;
+    return analysisResult.images_info;
   };
 
   const onFileMasking = () => {
@@ -104,7 +100,7 @@ function App() {
     console.log("Masking payload", payload);
 
     axios
-      .post(backend_endpoint + "/pii/mask", payload)
+      .post(backend_endpoint + "/pdf/blacken_words", payload)
       .then((response) => {
         console.log("Masking success", response.data);
         // xử lý tiếp nếu cần
@@ -131,7 +127,7 @@ function App() {
 
     axios({
       method: "post",
-      url: backend_endpoint + "/pii/analyze",
+      url: backend_endpoint + "/pdf/upload",
       responseType: "json",
       data: formData,
       headers: {
@@ -140,7 +136,13 @@ function App() {
     })
       .then((response) => {
         console.log("File uploaded successfully");
-        console.log(response.data);
+        console.log("Response data:", response.data);
+        console.log("Response data structure:", {
+          file_path: response.data.file_path,
+          res1: response.data.words,
+          res2: response.data.images_info,
+          flag: response.data.flag,
+        });
         setAnalysisResult(response.data); // ← Cập nhật kết quả
       })
       .catch((error) => {
@@ -336,17 +338,17 @@ function App() {
                   <button
                     className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={
-                      analysisResult.res1 ? onFileMasking : onFileAnalyze
+                      analysisResult.words ? onFileMasking : onFileAnalyze
                     }
-                    disabled={analysisResult.res1 ? isMasking : isAnalyzing}
+                    disabled={analysisResult.words ? isMasking : isAnalyzing}
                   >
                     <FaSync className="inline-block mr-2" />
-                    {analysisResult.res1 ? "Start masking" : "Start analyzing"}
+                    {analysisResult.words ? "Start masking" : "Start analyzing"}
                   </button>
                 </div>
 
                 {maskingMode === "auto" &&
-                  !analysisResult.res1 &&
+                  !analysisResult.words &&
                   !isAnalyzing && (
                     <div className="bg-white border rounded shadow p-6 w-full mx-auto mt-6">
                       <div className="flex items-center space-x-2 mb-4">
@@ -404,121 +406,51 @@ function App() {
                   </div>
                 )}
 
-                {analysisResult?.res1 && (
+                {analysisResult?.words && (
                   <div className="bg-white border rounded shadow p-6 w-full mx-auto mt-6">
                     <h3 className="text-xl font-bold mb-4 text-gray-800">
                       Analysis Result
                     </h3>
                     <div className="space-y-6">
-                      {analysisResult.res1.map(
-                        (
-                          pageItems: [string, string, number, number][],
-                          pageIndex: number
-                        ) => (
-                          <div key={pageIndex}>
-                            <h4 className="text-lg font-semibold mb-2 flex items-center gap-4">
-                              Page {pageIndex + 1}
-                              {maskingMode !== "auto" &&
-                                pageItems.length > 0 && (
-                                  <label className="inline-flex items-center text-sm font-normal">
-                                    <input
-                                      type="checkbox"
-                                      className="mr-2"
-                                      checked={
-                                        selectedRows[pageIndex]?.size ===
-                                          pageItems.length &&
-                                        pageItems.length > 0
-                                      }
-                                      onChange={() =>
-                                        toggleSelectAllInPage(
-                                          pageIndex,
-                                          pageItems.length
-                                        )
-                                      }
-                                    />
-                                    Select all
-                                  </label>
-                                )}
-                            </h4>
-                            {pageItems.length === 0 ? (
-                              <p className="text-gray-500 italic">
-                                No PII found on this page.
-                              </p>
-                            ) : (
-                              <table className="w-full table-auto border">
-                                <thead>
-                                  <tr className="bg-gray-100">
-                                    {maskingMode !== "auto" && (
-                                      <th className="border px-3 py-2">
-                                        Select
-                                      </th>
-                                    )}
-                                    <th className="border px-3 py-2 text-left">
-                                      Text
-                                    </th>
-                                    <th className="border px-3 py-2 text-left">
-                                      Type
-                                    </th>
-                                    <th className="border px-3 py-2 text-left">
-                                      Start
-                                    </th>
-                                    <th className="border px-3 py-2 text-left">
-                                      End
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {pageItems.map(
-                                    (
-                                      item: [string, string, number, number],
-                                      idx: number
-                                    ) => (
-                                      <tr
-                                        key={idx}
-                                        className="hover:bg-gray-50"
-                                      >
-                                        {maskingMode !== "auto" && (
-                                          <td className="border px-3 py-2 text-center">
-                                            <input
-                                              type="checkbox"
-                                              title="Select this row"
-                                              checked={
-                                                selectedRows[pageIndex]?.has(
-                                                  idx
-                                                ) || false
-                                              }
-                                              onChange={() =>
-                                                toggleRowSelection(
-                                                  pageIndex,
-                                                  idx
-                                                )
-                                              }
-                                            />
-                                          </td>
-                                        )}
-                                        <td className="border px-3 py-2">
-                                          {item[0]}
-                                        </td>
-                                        <td className="border px-3 py-2">
-                                          {labelMapping[
-                                            item[1] as keyof typeof labelMapping
-                                          ] || item[1]}
-                                        </td>
-                                        <td className="border px-3 py-2">
-                                          {item[2]}
-                                        </td>
-                                        <td className="border px-3 py-2">
-                                          {item[3]}
-                                        </td>
-                                      </tr>
-                                    )
-                                  )}
-                                </tbody>
-                              </table>
+                      <table className="w-full table-auto border">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            {maskingMode !== "auto" && (
+                              <th className="border px-3 py-2">Select</th>
                             )}
-                          </div>
-                        )
-                      )}
+                            <th className="border px-3 py-2 text-left">Text</th>
+                            <th className="border px-3 py-2 text-left">Type</th>
+                            <th className="border px-3 py-2 text-left">
+                              Confidence
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {analysisResult.words.map((item, idx) => (
+                            <tr key={idx} className="hover:bg-gray-50">
+                              {maskingMode !== "auto" && (
+                                <td className="border px-3 py-2 text-center">
+                                  <input
+                                    type="checkbox"
+                                    title="Select this row"
+                                    checked={selectedRows[0]?.has(idx) || false}
+                                    onChange={() => toggleRowSelection(0, idx)}
+                                  />
+                                </td>
+                              )}
+                              <td className="border px-3 py-2">{item.word}</td>
+                              <td className="border px-3 py-2">
+                                {labelMapping[
+                                  item.type as keyof typeof labelMapping
+                                ] || item.type}
+                              </td>
+                              <td className="border px-3 py-2">
+                                {(item.score * 100).toFixed(1)}%
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 )}

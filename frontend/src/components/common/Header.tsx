@@ -7,7 +7,7 @@ export default function Header() {
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <img src="/logo.png" alt="Logo" className="w-8" />
-          <span className="font-semibold text-lg">NER PII Masking</span>
+          <span className="font-semibold text-lg">PII Masking</span>
         </div>
 
         {/* Navigation */}

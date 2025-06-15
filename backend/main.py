@@ -60,7 +60,7 @@ async def upload_file(myFile: UploadFile = File(...)):
 
     return {
         "file_path": file_path,
-        "pii_words": pii_words,  # Placeholder for PII words, if needed
+        "words": pii_words,  # Placeholder for PII words, if needed
         # "image_infos": images_info,  # Placeholder for image information
     }
 
