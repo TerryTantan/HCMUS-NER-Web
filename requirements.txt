@@ -1,5 +1,5 @@
-wheel
 numpy<2.0
+wheel
 python-docx
 pymupdf
 easyocr
@@ -9,3 +9,4 @@ deep-translator
 spacy
 presidio-analyzer
 fastapi[standard]
+ipython

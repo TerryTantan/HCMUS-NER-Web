@@ -73,3 +73,5 @@ package-lock.json
 
 # Python virtual environments
 pdf-masker/.venv
+
+.venv

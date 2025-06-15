@@ -100,3 +100,26 @@ def process_docx(docx_path):
     except Exception as e:
         print(f"ERROR processing DOCX: {e}")
         return [], []
+
+if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) != 2:
+        print("Usage: python file_processor.py <path_to_file>")
+        sys.exit(1)
+        
+    file_path = sys.argv[1]
+    extracted_text, ocr_results = process_file(file_path)
+    
+    print("\nExtracted Text:")
+    for i, text in enumerate(extracted_text, 1):
+        print(f"\nPage {i}:")
+        print(text)
+    
+    print("\nOCR Results:")
+    for result in ocr_results:
+        print(f"\nImage {result['image_index']}:")
+        print(f"Text: {result['text']}")
+        print(f"Has Face: {result['has_face']}")
+        if 'page' in result:
+            print(f"Page: {result['page']}")
