@@ -1,0 +1,122 @@
+[
+    {
+        "text": "Cool Cat - Tech Hacker",
+        "label": "ORG",
+        "start": 0,
+        "end": 22
+    },
+    {
+        "text": "Email",
+        "label": "PERSON",
+        "start": 102,
+        "end": 107
+    },
+    {
+        "text": "coolcat@hackerden.me",
+        "label": "EMAIL_ADDRESS",
+        "start": 109,
+        "end": 129
+    },
+    {
+        "text": "linkedin.com/in/coolcat",
+        "label": "URL",
+        "start": 167,
+        "end": 190
+    },
+    {
+        "text": "github.com/coolcat1337",
+        "label": "URL",
+        "start": 201,
+        "end": 223
+    },
+    {
+        "text": "Mode",
+        "label": "PERSON",
+        "start": 242,
+        "end": 246
+    },
+    {
+        "text": "C++",
+        "label": "PERSON",
+        "start": 610,
+        "end": 613
+    },
+    {
+        "text": "JavaScript",
+        "label": "PERSON",
+        "start": 615,
+        "end": 625
+    },
+    {
+        "text": "Bash • Tools & Technologies",
+        "label": "ORG",
+        "start": 631,
+        "end": 658
+    },
+    {
+        "text": "Docker",
+        "label": "PERSON",
+        "start": 665,
+        "end": 671
+    },
+    {
+        "text": "Kubernetes",
+        "label": "ORG",
+        "start": 673,
+        "end": 683
+    },
+    {
+        "text": "AWS",
+        "label": "ORG",
+        "start": 685,
+        "end": 688
+    },
+    {
+        "text": "TensorFlow • Cybersecurity: Penetration Testing",
+        "label": "ORG",
+        "start": 690,
+        "end": 737
+    },
+    {
+        "text": "Ethical Hacking",
+        "label": "ORG",
+        "start": 739,
+        "end": 754
+    },
+    {
+        "text": "Cryptography •",
+        "label": "ORG",
+        "start": 756,
+        "end": 770
+    },
+    {
+        "text": "Node.js",
+        "label": "LOC",
+        "start": 790,
+        "end": 797
+    },
+    {
+        "text": "Django • Operating Systems",
+        "label": "ORG",
+        "start": 799,
+        "end": 825
+    },
+    {
+        "text": "Linux",
+        "label": "PERSON",
+        "start": 827,
+        "end": 832
+    },
+    {
+        "text": "Kali",
+        "label": "PERSON",
+        "start": 842,
+        "end": 846
+    },
+    {
+        "text": "CI",
+        "label": "ORG",
+        "start": 887,
+        "end": 889
+    }
+]

@@ -11,10 +11,10 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'cong-nghe-loi', 'read_file', 'src')))
-# from engine import file_to_json
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'cong-nghe-loi', 'ReadingFile', 'src')))
+# from engine import DetectSensitiveData
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from pdf_masker import utils  # if `utils.py` defines functions/classes
+from FileMasker import utils  # if `utils.py` defines functions/classes
 
 app = FastAPI()
 
@@ -111,7 +111,7 @@ async def blacken_words(req: BlackenWordsRequest):
 
 
 # @app.post("/pii/analyze")
-# async def process_file(myFile: UploadFile = File(...)):
+# async def ProcessFile(myFile: UploadFile = File(...)):
 #     salt = random.randint(1, 1000000)
 #     file_path = f"cached_file/{salt}{myFile.filename}"
     
@@ -121,7 +121,7 @@ async def blacken_words(req: BlackenWordsRequest):
         
 #     delete_file_in_background(file_path, delay=7200)
 #     ## process file
-#     res1, res2, flag = file_to_json(file_path)
+#     res1, res2, flag = DetectSensitiveData(file_path)
     
 
 #     return {

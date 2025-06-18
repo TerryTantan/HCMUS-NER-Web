@@ -1,0 +1,92 @@
+[
+    {
+        "text": "Cool Cat - Tech Hacker Extraordinaire 2 Professional Experience Senior Hacker - Shadow Network Solutions",
+        "label": "ORG",
+        "start": 0,
+        "end": 104
+    },
+    {
+        "text": "Docker",
+        "label": "PERSON",
+        "start": 297,
+        "end": 303
+    },
+    {
+        "text": "Ku-",
+        "label": "ORG",
+        "start": 308,
+        "end": 311
+    },
+    {
+        "text": "React",
+        "label": "LOC",
+        "start": 696,
+        "end": 701
+    },
+    {
+        "text": "Node.js",
+        "label": "LOC",
+        "start": 706,
+        "end": 713
+    },
+    {
+        "text": "AWS",
+        "label": "ORG",
+        "start": 797,
+        "end": 800
+    },
+    {
+        "text": "• Developed",
+        "label": "PERSON",
+        "start": 842,
+        "end": 853
+    },
+    {
+        "text": "Python",
+        "label": "LOC",
+        "start": 883,
+        "end": 889
+    },
+    {
+        "text": "B.Sc",
+        "label": "URL",
+        "start": 950,
+        "end": 954
+    },
+    {
+        "text": "Computer Science - Whisker University",
+        "label": "ORG",
+        "start": 959,
+        "end": 996
+    },
+    {
+        "text": "GPA",
+        "label": "ORG",
+        "start": 1034,
+        "end": 1037
+    },
+    {
+        "text": "TechPaw Conference 2019",
+        "label": "ORG",
+        "start": 1134,
+        "end": 1157
+    },
+    {
+        "text": "Key Projects • CatHack Toolkit",
+        "label": "ORG",
+        "start": 1159,
+        "end": 1189
+    },
+    {
+        "text": "Python",
+        "label": "LOC",
+        "start": 1269,
+        "end": 1275
+    },
+    {
+        "text": "C++",
+        "label": "LOC",
+        "start": 1407,
+        "end": 1410
+    }
+]
