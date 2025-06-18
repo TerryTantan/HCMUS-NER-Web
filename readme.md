@@ -4,10 +4,6 @@
 * The project must be **well-structured and scalable** to support future enhancements. Apply **Object-Oriented Programming (OOP)** principles and aim for clean, modular, and maintainable code.
 * Adding comments is highly encouraged to improve code readability and understanding.
 ---
-Here’s a clearer, more polished version of your `README.md` **Important Notes** section with improved grammar, vocabulary, and formatting:
-
----
-
 ### Important Notes
 
 * The current **entry point** of the project is `main.py`, located at the root directory. To test the project's functionality, either use `main.py` directly or create a new `.py` file at the root level for custom testing.
