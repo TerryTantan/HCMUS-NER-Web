@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function Header() {
   return (
     <header className="bg-gradient-to-b from-gray-800 to-gray-700 text-white px-6 py-3 shadow-md">
