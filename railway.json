@@ -1,6 +1,9 @@
 {
   "build": {
-    "nixpacksConfigPath": "nixpacks.toml"
+    "nixpacksConfigPath": "nixpacks.toml",
+    "nixpacksPlan": {
+      "providers": ["python"]
+    }
   },
   "deploy": {
     "startCommand": "uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
