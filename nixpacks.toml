@@ -15,10 +15,8 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-  'python3.12 -m venv /app/venv',  # Create a virtual environment
-  'source /app/venv/bin/activate',  # Activate the virtual environment
-  'pip install --upgrade pip',  # Upgrade pip in the virtual environment
-  'pip install -r requirements-linux.txt'  # Install dependencies
+  'pip3 install --upgrade pip',  # Upgrade pip in the virtual environment
+  'pip3 install -r requirements-linux.txt'  # Install dependencies
 ]
 
 [phases.start]
