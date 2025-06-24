@@ -1,4 +1,4 @@
-[setup]
+[phases.setup]
 nixPkgs = [
   "python312",
   "python312Packages.pip",
@@ -14,14 +14,11 @@ nixPkgs = [
   "freetype.dev"
 ]
 
-[install]
+[phases.install]
 cmds = [
   "python3 -m pip install --upgrade pip",
   "python3 -m pip install -r requirements-linux.txt"
 ]
 
-[build]
-cmds = []
-
-[start]
+[phases.start]
 cmd = "uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
