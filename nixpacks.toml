@@ -1,16 +1,6 @@
 [phases.setup]
 nixPkgs = [
-  "python312Packages.pip",
-  "gcc",
-  "pkg-config",
-  "zlib",
-  "zlib.dev",
-  "libffi",
-  "libffi.dev",
-  "openssl",
-  "openssl.dev",
-  "freetype",
-  "freetype.dev"
+  "python312Packages.pip"
 ]
 
 [phases.install]
