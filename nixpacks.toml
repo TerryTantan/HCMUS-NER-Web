@@ -15,9 +15,8 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-  "pip install --upgrade pip",
   "pip install -r requirements-linux.txt"
 ]
 
 [phases.start]
-cmd = "/nix/store/*-python3*/bin/uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
+cmd = "uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
