@@ -1,6 +1,6 @@
 [phases.setup]
 nixPkgs = [
-  "python311Full",
+  "python312Packages.pip",
   "gcc",
   "pkg-config",
   "zlib",
@@ -15,8 +15,8 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-  "/nix/store/*-python3*/bin/python3 -m pip install --upgrade pip",
-  "/nix/store/*-python3*/bin/python3 -m pip install -r requirements-linux.txt"
+  "pip install --upgrade pip",
+  "pip install -r requirements-linux.txt"
 ]
 
 [phases.start]
