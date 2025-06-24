@@ -1,7 +1,7 @@
 [phases.setup]
 nixPkgs = [
-  "...",
-  "curl",
+  "python312Full",
+  "gcc",
   "pkg-config",
   "zlib",
   "zlib.dev",
@@ -15,8 +15,8 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-  'pip3 install --upgrade pip',  # Upgrade pip in the virtual environment
-  'pip3 install -r requirements-linux.txt'  # Install dependencies
+  "python3 -m pip install --upgrade pip",
+  "python3 -m pip install -r requirements-linux.txt"
 ]
 
 [phases.start]
