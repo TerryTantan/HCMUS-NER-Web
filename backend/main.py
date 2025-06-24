@@ -11,10 +11,10 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'cong-nghe-loi', 'ReadingFile', 'src')))
-# from engine import DetectSensitiveData
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from FileMasker import utils  # if `utils.py` defines functions/classes
+# # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'cong-nghe-loi', 'ReadingFile', 'src')))
+# # from engine import DetectSensitiveData
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# from FileMasker import utils  # if `utils.py` defines functions/classes
 
 app = FastAPI()
 
@@ -23,7 +23,6 @@ origins = [
 ]
 
 delay_time = 300
-
 
 
 app.add_middleware(
@@ -50,13 +49,15 @@ async def upload_file(myFile: UploadFile = File(...)):
         
     delete_file_in_background(file_path, delay=delay_time)
     
-    ## process file
-    content = utils.get_content(file_path)
-    pii_words = utils.get_pii_words(content)
-    print(f"PII words found: {pii_words}")
-    images_info = utils.extract_images(file_path)
-    #dont send image key in inmage_info
-    images_info = [{"page": img["page"], "bbox": img["bbox"]} for img in images_info]
+    # ## process file
+    # content = utils.get_content(file_path)
+    # pii_words = utils.get_pii_words(content)
+    # print(f"PII words found: {pii_words}")
+    # images_info = utils.extract_images(file_path)
+    # #dont send image key in inmage_info
+    # images_info = [{"page": img["page"], "bbox": img["bbox"]} for img in images_info]
+
+    pii_words = ["test"]
 
     return {
         "file_path": file_path,
@@ -76,7 +77,8 @@ async def blacken_words(req: BlackenWordsRequest):
     # Extract only the word field from each dictionary
     words = [word['word'] for word in req.words]
     
-    flag = utils.blacken_words(req.file_path, f"blackened_words_{os.path.basename(req.file_path)}", words)
+    # flag = utils.blacken_words(req.file_path, f"blackened_words_{os.path.basename(req.file_path)}", words)
+    flag = 0  # Placeholder for the actual blackening function call
     if flag == 0:
         return {"error": "No words found to blacken"}
 
