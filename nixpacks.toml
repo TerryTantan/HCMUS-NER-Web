@@ -1,8 +1,8 @@
 [phases.setup]
 nixPkgs = [
-  "python311Full",
-  "gcc",
-  "pkg-config",
+  "python311Full",         # Includes Python 3.11 with pip preinstalled
+  "gcc",                   # Needed for C extensions
+  "pkg-config",            # Helps locate libraries
   "zlib",
   "zlib.dev",
   "libffi",
