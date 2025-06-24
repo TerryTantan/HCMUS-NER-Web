@@ -5,7 +5,7 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-  "python3 -m pip install --target=app_packages -r requirements-linux.txt",
+  "pip install --target=app_packages -r requirements-linux.txt",
 ]
 
 [phases.start]
