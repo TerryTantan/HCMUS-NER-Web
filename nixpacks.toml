@@ -1,6 +1,7 @@
 [phases.setup]
 nixPkgs = [
   "...",
+  "curl",
   "pkg-config",
   "zlib",
   "zlib.dev",
@@ -14,6 +15,8 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
+  'curl -O https://bootstrap.pypa.io/get-pip.py',  
+  'python3.12 get-pip.py',
   "pip install --upgrade pip",
   "pip install -r requirements-linux.txt"
 ]
