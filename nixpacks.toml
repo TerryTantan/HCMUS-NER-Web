@@ -15,10 +15,10 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-  'curl -O https://bootstrap.pypa.io/get-pip.py',  
-  'python3.12 get-pip.py',
-  "pip install --upgrade pip",
-  "pip install -r requirements-linux.txt"
+  'python3.12 -m venv /app/venv',  # Create a virtual environment
+  'source /app/venv/bin/activate',  # Activate the virtual environment
+  'pip install --upgrade pip',  # Upgrade pip in the virtual environment
+  'pip install -r requirements-linux.txt'  # Install dependencies
 ]
 
 [phases.start]
