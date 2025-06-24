@@ -7,6 +7,3 @@ nixPkgs = [
 cmds = [
   "pip install --target=app_packages -r requirements-linux.txt",
 ]
-
-[phases.start]
-cmd = "PYTHONPATH=./app_packages PATH=./app_packages/bin:$PATH uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
