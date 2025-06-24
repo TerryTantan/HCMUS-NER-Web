@@ -1,8 +1,8 @@
 [phases.setup]
 nixPkgs = [
-  "python311Full",         # Includes Python 3.11 with pip preinstalled
-  "gcc",                   # Needed for C extensions
-  "pkg-config",            # Helps locate libraries
+  "python311Full",
+  "gcc",
+  "pkg-config",
   "zlib",
   "zlib.dev",
   "libffi",
@@ -15,9 +15,9 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-  "python3 -m pip install --upgrade pip",
-  "python3 -m pip install -r requirements-linux.txt"
+  "/nix/store/*-python3*/bin/python3 -m pip install --upgrade pip",
+  "/nix/store/*-python3*/bin/python3 -m pip install -r requirements-linux.txt"
 ]
 
 [phases.start]
-cmd = "uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
+cmd = "/nix/store/*-python3*/bin/uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
