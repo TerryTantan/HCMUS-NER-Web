@@ -1,4 +1,4 @@
-[phases.setup]
+[setup]
 nixPkgs = [
   "python312",
   "python312Packages.pip",
@@ -14,17 +14,14 @@ nixPkgs = [
   "freetype.dev"
 ]
 
-[phases.install]
-# Upgrade pip and install your requirements
+[install]
 cmds = [
   "python3 -m pip install --upgrade pip",
   "python3 -m pip install -r requirements-linux.txt"
 ]
 
-[phases.build]
-# Optional: if you do any asset compilation, put it here
+[build]
 cmds = []
 
-[phases.start]
-# Start your FastAPI app with Uvicorn
+[start]
 cmd = "uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
