@@ -1,6 +1,6 @@
 [phases.setup]
 nixPkgs = [
-  "python312Full",
+  "python311Full",
   "gcc",
   "pkg-config",
   "zlib",
