@@ -4,7 +4,7 @@ import { FaFileAlt, FaSync, FaWrench, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import Footer from "./components/common/Footer";
 
-const backend_endpoint = "http://localhost:8000";
+const backend_endpoint = import.meta.env.VITE_BACKEND_ENDPOINT || "http://localhost:8000";
 
 const labelMapping = {
   PERSON: "Personal Name",
