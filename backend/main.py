@@ -44,6 +44,9 @@ async def upload_file(myFile: UploadFile = File(...)):
     file_path = f"cached_file/{salt}{myFile.filename}"
     
     ## save file to disk
+    if not os.path.exists("cached_file"):
+        os.makedirs("cached_file")
+        
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(myFile.file, buffer)
         
